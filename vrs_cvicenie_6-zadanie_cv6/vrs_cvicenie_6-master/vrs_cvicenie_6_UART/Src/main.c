@@ -27,10 +27,12 @@
 
 char buffer[6];
 int buffer_index = 0;
+int led_state = 0;
 
 void SystemClock_Config(void);
 
 void process_serial_data(uint8_t ch);
+void printTerminal(char * message);
 
 int main(void)
 {
@@ -47,28 +49,13 @@ int main(void)
 
   USART2_RegisterCallback(process_serial_data);
 
-//  char tx_data = 'a';
-
   while (1)
   {
-	  //	  LL_USART_TransmitData8(USART2, tx_data++);
-	  //	  tx_data == ('z' + 1) ? tx_data = 'a' : tx_data;
-	  	  LL_mDelay(50);
-	  		if(!strncmp(buffer,"ledON",5))
-	  		{
-	  			LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_3);
-	  			LL_USART_TransmitData8(USART2, '\n');
-	  			LL_USART_TransmitData8(USART2, '1');
-	  			buffer[0] = 1;
-
-	  		}
-	  		if(!strncmp(buffer,"ledOFF",6))
-	  		{
-	  			LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_3);
-	  			LL_USART_TransmitData8(USART2, '\n');
-	  			LL_USART_TransmitData8(USART2, '0');
-				buffer[0] = 0;
-	  		}
+	  	  LL_mDelay(5000);
+	  	 if (led_state == 1)
+	  		 printTerminal(message1);
+	  	 if (led_state == 0)
+	  		 printTerminal(message2);
   }
 }
 
@@ -110,14 +97,35 @@ void SystemClock_Config(void)
 
 void process_serial_data(uint8_t ch)
 {
-	if (buffer_index != 0 && ch == 'l')
+  if (buffer_index != 0 && ch == 'l')
 		buffer_index = 0;
 
  	 buffer[buffer_index] = ch;
- 	 buffer_index++;
 
- 	 if (buffer_index == 6)
- 		buffer_index = 0;
+
+ 	 if(buffer_index == 5)
+ 	 {
+		if(!strncmp(buffer,"ledON",5))
+		{
+			LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_3);
+			buffer_index = 0;
+			led_state = 1;
+
+		}
+ 	 }
+	if(buffer_index == 6)
+	{
+		if(!strncmp(buffer,"ledOFF",6))
+		{
+			LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_3);
+			buffer_index = 0;
+			led_state = 0;
+		}
+	}
+	if (ch != '\r')
+	{
+		buffer_index++;
+	}
 }
 
 
