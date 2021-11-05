@@ -128,6 +128,15 @@ void process_serial_data(uint8_t ch)
 	}
 }
 
+void printTerminal (char *message)
+{
+	for (int i = 0 ; i < strlen(message) ; i++)
+	{
+		LL_USART_TransmitData8(USART2, message[i]);
+		LL_mDelay(10);
+	}
+	LL_USART_TransmitData8(USART2, '\n');
+}
 
 
 /**
